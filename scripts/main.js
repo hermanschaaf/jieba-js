@@ -1,7 +1,42 @@
-require(["finalseg", "data/dict"], function(dict) {
-    FREQ = {}
+require(["finalseg", "data/dictionary"], function(dict) {
+    var trie = {}, // to be initialized
+        FREQ = {},
+        total = 0.0,
+        min_freq = 0.0,
+        initialized = false;
 
-    var max_of_array = Math.max.apply(Math, array);
+    var max_of_array = Math.max.apply(Math, array),
+        min_of_array = Math.min.apply(Math, array);
+
+    var get_trie = function () {
+
+    }
+
+    var initialize = function() {
+        if (initialized === true) {
+            return;
+        }
+        if (trie) {
+            trie = {};
+        }
+        console.log("Building Trie...");
+
+        var gar = gen_trie();
+        trie = gar[0];
+        FREQ = gar[1];
+        total = gar[2];
+
+        var min_freq = Infinity;
+        // normalize:
+        for (k in FREQ) {
+            var v = FREQ[k];
+            FREQ[k] = Math.log(float(v) / total);
+            if (FREQ[k] < min_freq) {
+                min_freq = FREQ[k];
+            }
+        }
+        initialized = true;
+    }
 
     var get_DAG = function(sentence) {
         var N = sentence.length,
