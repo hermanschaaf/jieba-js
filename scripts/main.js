@@ -9,7 +9,28 @@ require(["finalseg", "data/dictionary"], function(dict) {
         min_of_array = Math.min.apply(Math, array);
 
     var get_trie = function () {
+        var lfreq = {},
+            trie = {},
+            ltotal = 0.0;
 
+        for (var i = 0; i < dictionary.length; i++) {
+            var entry = dictionary[i],
+                word = entry[0],
+                freq = entry[1];
+            lfreq[word] = freq;
+            ltotal += freq;
+            p = trie;
+            for (var ci = 0; ci < word.length; ci++) {
+                var c = word[ci];
+                if (!(c in p)) {
+                    p[c] = {};
+                }
+                p = p[c];
+            }
+            p[''] = ''; // ending flag
+        }
+
+        return [trie, lfreq, ltotal];
     }
 
     var initialize = function() {
@@ -36,6 +57,8 @@ require(["finalseg", "data/dictionary"], function(dict) {
             }
         }
         initialized = true;
+
+        console.log("Trie built!");
     }
 
     var get_DAG = function(sentence) {
