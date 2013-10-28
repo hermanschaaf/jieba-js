@@ -5,8 +5,8 @@ require(["data/dictionary"], function(dictionary) {
         min_freq = 0.0,
         initialized = false;
 
-    var max_of_array = function(array){Math.max.apply(Math, array)},
-        min_of_array = function(array){Math.min.apply(Math, array)};
+    var max_of_array = function(array){return Math.max.apply(Math, array)},
+        min_of_array = function(array){return Math.min.apply(Math, array)};
 
     var gen_trie = function () {
         var lfreq = {},
@@ -112,6 +112,7 @@ require(["data/dictionary"], function(dictionary) {
                 candidates_x.push(x);
             }
             var m = max_of_array(candidates);
+            console.log('max is', m);
             route[idx] = [m, candidates_x[candidates.indexOf(m)]];
         }
     }
@@ -162,6 +163,7 @@ require(["data/dictionary"], function(dictionary) {
             x = y;
         }
 
+
         if (buf.length > 0) {
             if (buf.length == 1) {
                 yieldValues.push(buf);
@@ -188,6 +190,8 @@ require(["data/dictionary"], function(dictionary) {
             route = {},
             yieldValues = [];
 
+        var DAG = get_DAG(sentence);
+        console.log("DAG", DAG);
         calc(sentence, DAG, 0, route);
 
         console.log(route);
@@ -199,6 +203,7 @@ require(["data/dictionary"], function(dictionary) {
         while (x < N) {
             y = route[x][1] + 1;
             l_word = sentence.substring(x, y);
+            console.log(l_word, l_word.match(re_eng))
             if (l_word.match(re_eng) && l_word.length == 1) {
                 buf += l_word;
                 x = y;
@@ -221,7 +226,7 @@ require(["data/dictionary"], function(dictionary) {
 
     var cut = function(sentence){
         var cut_all = false,
-            HMM = true,
+            HMM = false,
             yieldValues = [];
 
         var re_han = /([\u4E00-\u9FA5a-zA-Z0-9+#&\._]+)/,
@@ -232,12 +237,14 @@ require(["data/dictionary"], function(dictionary) {
 
         for (b in blocks) {
             var blk = blocks[b];
+            console.log(b, blk);
             if (blk.length == 0) {
                 continue;
             }
 
             if (blk.match(re_han)) {
                 var cutted = cut_block(blk);
+                console.log("matches", cutted);
                 for (w in cutted) {
                     var word = cutted[w];
                     yieldValues.push(word);
@@ -267,5 +274,5 @@ require(["data/dictionary"], function(dictionary) {
     // initialize when the file loads (no lazy-loading yet):
     initialize();
 
-    console.log(cut("X射线一丁不識γ射线"));
+    console.log(cut("我爸新学会了一项解决日常烦闷的活动，就是把以前的照片抱回办公室扫描保存，弄成电子版的。更无法接受的是，还居然放到网上来，时不时给我两张。这些积尘的化石居然突然重现，简直是招架不住。这个怀旧的阀门一旦打开，那就直到意识模糊都没停下来。"));
 });
