@@ -1,4 +1,4 @@
-require(["finalseg", "data/dictionary"], function(dict) {
+require(["data/dictionary"], function(dict) {
     var trie = {}, // to be initialized
         FREQ = {},
         total = 0.0,
@@ -116,6 +116,10 @@ require(["finalseg", "data/dictionary"], function(dict) {
     }
 
     var __cut_DAG = function(sentence) {
+        // finalseg is still to be implemented,
+        // so this is also unfinished. Use __cut_DAG_NO_HMM
+        // for now
+
         var DAG = get_DAG(sentence);
         var route = {};
         var yieldValues = [];
@@ -178,6 +182,40 @@ require(["finalseg", "data/dictionary"], function(dict) {
         return yieldValues;
     }
 
+    var __cut_DAG_NO_HMM = function (sentence) {
+        var re_eng = /[a-zA-Z0-9]/,
+            route = {},
+            yieldValues = [];
+
+        calc(sentence, DAG, 0, route);
+
+        var x = 0,
+            buf = '',
+            N = sentence.length;
+
+        while (x < N) {
+            y = route[x][1] + 1;
+            l_word = sentence.substring(x, y);
+            if (l_word.match(re_eng) && l_word.length == 1) {
+                buf += l_word;
+                x = y;
+            }
+            else {
+                if (buf.length > 0) {
+                    yieldValues.push(buf);
+                    buf = '';
+                }
+                yieldValues.push(l_word);
+                x = y;
+            }
+        }
+        if (buf.length > 0) {
+            yieldValues.push(buf);
+            buf = '';
+        }
+        return yieldValues;
+    }
+
     var cut = function(sentence){
         var cut_all = false,
             HMM = true,
@@ -187,7 +225,7 @@ require(["finalseg", "data/dictionary"], function(dict) {
             re_skip = /(\r\n|\s)/;
 
         var blocks = sentence.split(re_han);
-        var cut_block = __cut_DAG;
+        var cut_block = HMM ? __cut_DAG : __cut_DAG_NO_HMM;
 
         for (blk in blocks) {
             if (blk.length == 0) {
@@ -220,5 +258,6 @@ require(["finalseg", "data/dictionary"], function(dict) {
         return yieldValues;
     }
 
-
+    // initialize when the file loads (no lazy-loading yet):
+    initialize();
 });
