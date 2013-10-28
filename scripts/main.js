@@ -1,14 +1,14 @@
-require(["data/dictionary"], function(dict) {
+require(["data/dictionary"], function(dictionary) {
     var trie = {}, // to be initialized
         FREQ = {},
         total = 0.0,
         min_freq = 0.0,
         initialized = false;
 
-    var max_of_array = Math.max.apply(Math, array),
-        min_of_array = Math.min.apply(Math, array);
+    var max_of_array = function(array){Math.max.apply(Math, array)},
+        min_of_array = function(array){Math.min.apply(Math, array)};
 
-    var get_trie = function () {
+    var gen_trie = function () {
         var lfreq = {},
             trie = {},
             ltotal = 0.0;
@@ -51,14 +51,14 @@ require(["data/dictionary"], function(dict) {
         // normalize:
         for (k in FREQ) {
             var v = FREQ[k];
-            FREQ[k] = Math.log(float(v) / total);
+            FREQ[k] = Math.log(v / total);
             if (FREQ[k] < min_freq) {
                 min_freq = FREQ[k];
             }
         }
         initialized = true;
 
-        console.log("Trie built!");
+        console.log("Trie built!", trie);
     }
 
     var get_DAG = function(sentence) {
@@ -105,8 +105,9 @@ require(["data/dictionary"], function(dict) {
         for (idx = N - 1; idx > -1; idx--) {
             candidates = [];
             candidates_x = [];
-            for (x in DAG[idx]) {
-                var f = (sentence[idx:x+1] in FREQ) ? FREQ[sentence[idx:x+1]] : min_freq;
+            for (xi in DAG[idx]) {
+                var x = DAG[idx][xi];
+                var f = ((sentence.substring(idx, x+1) in FREQ) ? FREQ[sentence.substring(idx, x+1)] : min_freq);
                 candidates.push(f + route[x+1][0]);
                 candidates_x.push(x);
             }
@@ -145,12 +146,12 @@ require(["data/dictionary"], function(dict) {
                         if (!(buf in FREQ)) {
                             var recognized = finalseg.cut(buf);
                             for (t in recognized) {
-                                yieldValues.push(t);
+                                yieldValues.push(recognized[t]);
                             }
                         }
                         else {
                             for (elem in buf) {
-                                yieldValues.push(elem);
+                                yieldValues.push(buf[elem]);
                             }
                         }
                         buf = "";
@@ -169,12 +170,12 @@ require(["data/dictionary"], function(dict) {
                 if (!(buf in FREQ)) {
                     var recognized = finalseg.cut(buf);
                     for (t in recognized) {
-                        yieldValues.push(t);
+                        yieldValues.push(recognized[t]);
                     }
                 }
                 else {
                     for (elem in buf) {
-                        yieldValues.push(elem);
+                        yieldValues.push(buf[elem]);
                     }
                 }
             }
@@ -188,6 +189,8 @@ require(["data/dictionary"], function(dict) {
             yieldValues = [];
 
         calc(sentence, DAG, 0, route);
+
+        console.log(route);
 
         var x = 0,
             buf = '',
@@ -227,13 +230,16 @@ require(["data/dictionary"], function(dict) {
         var blocks = sentence.split(re_han);
         var cut_block = HMM ? __cut_DAG : __cut_DAG_NO_HMM;
 
-        for (blk in blocks) {
+        for (b in blocks) {
+            var blk = blocks[b];
             if (blk.length == 0) {
                 continue;
             }
 
             if (blk.match(re_han)) {
-                for (word in cut_block(blk)) {
+                var cutted = cut_block(blk);
+                for (w in cutted) {
+                    var word = cutted[w];
                     yieldValues.push(word);
                 }
             }
@@ -245,8 +251,8 @@ require(["data/dictionary"], function(dict) {
                         yieldValues.push(x);
                     }
                     else if (!cut_all) {
-                        for (xx in x) {
-                            yieldValues.push(xx);
+                        for (xi in x) {
+                            yieldValues.push(x[xi]);
                         }
                     }
                     else {
@@ -260,4 +266,6 @@ require(["data/dictionary"], function(dict) {
 
     // initialize when the file loads (no lazy-loading yet):
     initialize();
+
+    console.log(cut("X射线一丁不識γ射线"));
 });
